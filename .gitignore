@@ -1,0 +1,29 @@
+# Real data - contains guest personal information
+data/raw/*
+!data/raw/.gitkeep
+data/extraction/
+data/review/
+logs/
+data/migration
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# macOS
+.DS_Store
+
+# Credentials
+.env
+*.env
+.env*
+!.env.example
+
+#SQL
+sql/explore.sql
+
+#config
+config/property.json
+deploy/azure.env

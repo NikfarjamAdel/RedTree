@@ -1,0 +1,15 @@
+# Lint rules: catch real mistakes, not deliberate patterns.
+# Broad excepts and unchecked subprocess calls are deliberate: pipeline steps
+# catch per item, log and continue (every step is idempotent and retried),
+# and the runners read return codes themselves so one failure doesn't stop
+# the rest. So BLE and PLW1510 are not selected.
+target-version = "py311"
+line-length = 100
+
+[lint]
+select = [
+    "E9",    # syntax errors
+    "F",     # pyflakes: unused imports and variables, undefined names
+    "I",     # import order (fixed automatically with --fix)
+    "E741",  # ambiguous variable names (l, O, I)
+]

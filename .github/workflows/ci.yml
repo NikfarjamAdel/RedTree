@@ -1,0 +1,86 @@
+# Continuous integration: on every push and pull request, lint and run the
+# unit tests, then build the whole database from nothing (with generated
+# demo data) in a fresh SQL Server container, running every check and test,
+# then the tests that need a database.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: "Y"
+          # A throwaway password for a container that exists only for this
+          # run; it protects nothing real.
+          MSSQL_SA_PASSWORD: "Ci_Build_2026!"
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$MSSQL_SA_PASSWORD\" -Q 'SELECT 1'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 12
+
+    env:
+      # The local-database settings the scripts read (same names as .env.example)
+      MSSQL_HOST: localhost
+      MSSQL_PORT: "1433"
+      MSSQL_USER: sa
+      MSSQL_PASSWORD: "Ci_Build_2026!"
+      MSSQL_DB: RedTree
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install the SQL Server ODBC driver
+        run: |
+          if odbcinst -q -d -n "ODBC Driver 18 for SQL Server" > /dev/null 2>&1; then
+            echo "ODBC Driver 18 already installed"
+          else
+            curl -sSL -O https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb
+            sudo dpkg -i packages-microsoft-prod.deb
+            sudo apt-get update
+            sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18
+          fi
+
+      - name: Install Python packages
+        run: pip install -r requirements-dev.txt
+
+      - name: Lint
+        run: ruff check python tests
+
+      - name: Unit tests (no database)
+        run: pytest -q -m "not db"
+
+      - name: Create the database
+        run: |
+          python - <<'EOF'
+          import os, pyodbc
+          conn = pyodbc.connect(
+              "DRIVER={ODBC Driver 18 for SQL Server};SERVER=localhost,1433;"
+              f"UID=sa;PWD={os.environ['MSSQL_PASSWORD']};"
+              "DATABASE=master;Encrypt=yes;TrustServerCertificate=yes",
+              autocommit=True)
+          conn.execute(f"CREATE DATABASE {os.environ['MSSQL_DB']}")
+          print("Created", os.environ['MSSQL_DB'])
+          EOF
+
+      - name: Build from nothing with demo data, then check and test
+        run: python python/build_db.py --demo --yes
+
+      - name: Database tests
+        run: pytest -q -m db

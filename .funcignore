@@ -1,0 +1,13 @@
+.git*
+.venv/
+.vscode/
+.env
+.env*
+data/
+logs/
+deploy/
+docs/
+__pycache__/
+*.bacpac
+.DS_Store
+**/.DS_Store

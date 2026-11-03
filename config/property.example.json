@@ -1,0 +1,44 @@
+{
+  "properties": [
+    {
+      "key": "demo",
+      "name": "Demo house",
+      "address": "1 Example Street, Exampleville SA 5000",
+      "description": "A self-contained guest suite on the property. Some costs belong to the suite alone; others are for the whole property and are split later.",
+      "categorisation_notes": "Garden costs are for the suite. Coffee, tea and milk for guests are welcome_box.",
+      "listings": [
+        {
+          "key": "suite",
+          "title": "The Suite",
+          "airbnb_name": "The Suite",
+          "listed_from": "2025-04-01",
+          "receipt_address": "receipts+suite@example.com",
+          "default_for_receipts": true,
+          "ical_url_setting": "AIRBNB_ICAL_URL_SUITE",
+          "cleaning_cost_per_turnover": 110.00,
+          "loan_interest_share": 0.40
+        }
+      ],
+      "loans": [
+        { "code": "demo-main", "description": "Home loan", "active_from": "2025-04-01", "charge_day": 19 }
+      ]
+    }
+  ],
+  "apportionment": [
+    { "listing": "suite", "category": "electricity",   "rate": 0.50, "valid_from": "2025-04-01", "basis": "Example: shared meter" },
+    { "listing": "suite", "category": "internet",      "rate": 0.50, "valid_from": "2025-04-01", "basis": "Example: shared connection" },
+    { "listing": "suite", "category": "council_rates", "rate": 0.40, "valid_from": "2025-04-01", "basis": "Example: floor area" },
+    { "listing": "suite", "category": "insurance",     "rate": 0.40, "valid_from": "2025-04-01", "basis": "Example: floor area" },
+    { "listing": "suite", "category": "repairs",       "rate": 0.40, "valid_from": "2025-04-01", "basis": "Example: floor area" },
+    { "listing": "suite", "category": "other",         "rate": 0.40, "valid_from": "2025-04-01", "basis": "Example: floor area" }
+  ],
+  "merchant_rules": [
+    { "match_type": "abn", "match_value": "51824753556", "merchant_name": "Example Plumbing",
+      "category": "repairs", "scope": "property", "listing": null,
+      "notes": "The Australian Taxation Office's own (public) ABN, used as a valid example" }
+  ],
+  "booking_corrections": [
+    { "confirmation_code": "HMDEMO9DKW", "field": "check_out", "corrected_value": "2025-08-19",
+      "reason": "Example: the guest left a day early; the export reports the booked end date" }
+  ]
+}
