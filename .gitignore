@@ -1,10 +1,7 @@
 # Real data - contains guest personal information
-data/raw/*
-!data/raw/.gitkeep
-data/extraction/
-data/review/
+data/
 logs/
-data/migration
+
 
 # Python
 __pycache__/
