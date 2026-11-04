@@ -260,3 +260,14 @@ AI coding assistants (Claude, Claude Code) under my direction; I reviewed,
 debugged and tested all of it. See
 [`docs/DESIGN.md`](docs/DESIGN.md) for the main design decisions and the
 reasoning behind them.
+
+## Licence
+
+This project is source-available under the
+[PolyForm Strict License 1.0.0](LICENSE): you may build and run it for any
+noncommercial purpose, but not change, redistribute or use it commercially.
+
+As an additional permission, anyone may clone, build and run this project,
+including the demo, to evaluate it, for example as part of a hiring process.
+
+For any other use, please contact me.
