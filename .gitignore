@@ -27,3 +27,4 @@ sql/explore.sql
 #config
 config/property.json
 deploy/azure.env
+private/
