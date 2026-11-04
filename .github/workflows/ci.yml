@@ -1,7 +1,8 @@
 # Continuous integration: on every push and pull request, lint and run the
 # unit tests, then build the whole database from nothing (with generated
 # demo data) in a fresh SQL Server container, running every check and test,
-# then the tests that need a database.
+# then the tests that need a database. A separate job checks every tracked
+# file for forbidden paths and real-looking secrets.
 name: CI
 
 on:
@@ -84,3 +85,59 @@ jobs:
 
       - name: Database tests
         run: pytest -q -m db
+
+  # Same forbidden paths and secret patterns as the local pre-commit hook, but
+  # on every tracked file, so it covers commits from any machine. It needs
+  # nothing from outside this repository, so it can't check for private terms.
+  hygiene:
+    name: Repository hygiene
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: No forbidden paths and no real-looking secrets
+        shell: bash
+        env:
+          LC_ALL: C
+        run: |
+          set -euo pipefail
+          failed=0
+
+          git ls-files -z > "$RUNNER_TEMP/paths"
+          [ -s "$RUNNER_TEMP/paths" ] || { echo "No tracked files found"; exit 1; }
+
+          while IFS= read -r -d '' path; do
+            case $path in
+              .env.example) ;;
+              .env*|*/.env*|config/property.json|deploy/azure.env|deploy/public_terms.txt|\
+              data|data/*|*/data/*|logs|logs/*|*/logs/*|\
+              private|private/*|*/private/*|*.bacpac)
+                printf 'Forbidden path: %q\n' "$path"
+                failed=1 ;;
+            esac
+          done < "$RUNNER_TEMP/paths"
+
+          # Shaped like real values, so placeholders don't count, and neither
+          # do these patterns themselves. Exit status 1 only means no match.
+          status=0
+          git grep -I -n -E \
+            -e 'AccountKey=[A-Za-z0-9+/]{20}' \
+            -e 'sk-ant-[A-Za-z0-9_-]{20}' \
+            -e "Password=[^[:space:]\"'<\$[{]" > "$RUNNER_TEMP/hits" || status=$?
+          [ "$status" -le 1 ] || exit "$status"
+
+          # File and line only: the rest of the line would put the secret in
+          # the job's log.
+          if [ -s "$RUNNER_TEMP/hits" ]; then
+            cut -d: -f1,2 "$RUNNER_TEMP/hits" | sed 's/^/Possible secret: /'
+            failed=1
+          fi
+
+          [ "$failed" -eq 1 ] || echo "No forbidden paths and no real-looking secrets"
+          exit "$failed"
