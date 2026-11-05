@@ -1,5 +1,6 @@
 # Short-stay rental data platform (RedTree)
 
+[![CI](https://github.com/NikfarjamAdel/RedTree/actions/workflows/ci.yml/badge.svg)](https://github.com/NikfarjamAdel/RedTree/actions/workflows/ci.yml)
 
 An end-to-end data platform for a short-term rental business, running on
 Microsoft Azure. It ingests booking exports, a receipts mailbox and daily
@@ -268,6 +269,6 @@ This project is source-available under the
 noncommercial purpose, but not change, redistribute or use it commercially.
 
 As an additional permission, anyone may clone, build and run this project,
-including the demo, to evaluate it, for example as part of a hiring process.
+including the demo, to evaluate it.
 
 For any other use, please contact me.
