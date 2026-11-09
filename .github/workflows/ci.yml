@@ -62,7 +62,7 @@ jobs:
         run: pip install -r requirements-dev.txt
 
       - name: Lint
-        run: ruff check python tests
+        run: ruff check python tests dashboard
 
       - name: Unit tests (no database)
         run: pytest -q -m "not db"

@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>RedTree dashboard</title>
+  <meta name="description" content="Monthly profit, nights and costs for each listing, read live from the RedTree database.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <script src="js/theme-init.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=DM+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="topbar">
+    <div class="wrap topbar__inner">
+      <a class="brand" href="/" aria-label="RedTree dashboard">
+        <svg class="brand__mark" viewBox="0 0 28 28" aria-hidden="true">
+          <rect width="28" height="28" rx="8" class="brand__tile"/>
+          <path d="M8 20.5C8 12.5 12.6 7.5 20.5 7.5C20.5 15.5 15.9 20.5 8 20.5Z" class="brand__leaf"/>
+          <path d="M8 20.5L16.2 12.3" class="brand__rib"/>
+        </svg>
+        <span class="brand__name">RedTree</span>
+      </a>
+
+      <p class="place" id="place" aria-live="polite"></p>
+
+      <div class="controls">
+        <label class="listing-picker" id="listing-picker" hidden>
+          <span class="sr-only">Listing</span>
+          <select id="listing-select"></select>
+        </label>
+
+        <div class="period">
+          <button class="btn period__button" id="period-button" type="button"
+                  aria-haspopup="menu" aria-expanded="false" aria-controls="period-menu">
+            <svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4.5h11v9h-11zM2.5 7h11M5.5 2.5v3M10.5 2.5v3"/></svg>
+            <span id="period-label">Loading…</span>
+            <svg class="icon icon--caret" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 6.5 8 10l3.5-3.5"/></svg>
+          </button>
+          <div class="popover" id="period-menu" role="menu" aria-label="Period" hidden></div>
+        </div>
+
+        <button class="icon-btn" id="theme-button" type="button" aria-label="Theme: match system">
+          <svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5"/><path d="M8 2.5v11" /><path d="M8 2.5a5.5 5.5 0 0 1 0 11z" class="icon__fill"/></svg>
+        </button>
+        <button class="icon-btn" id="reload-button" type="button" aria-label="Reload figures from the database">
+          <svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.6-3.7M13 2.8v2.7h-2.7"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <section class="hero deep" aria-labelledby="hero-title">
+      <div class="wrap">
+        <p class="eyebrow" id="hero-eyebrow">Profit after interest</p>
+        <h1 class="hero__title" id="hero-title">Reading the ledger…</h1>
+        <p class="hero__lede" id="hero-lede"></p>
+        <div class="hero__flags" id="hero-flags"></div>
+        <figure class="bridge" aria-labelledby="bridge-caption">
+          <figcaption class="sr-only" id="bridge-caption">Profit bridge: from what guests paid to profit after interest</figcaption>
+          <div class="chart chart--bridge" id="chart-bridge"></div>
+        </figure>
+        <div class="hero__error" id="hero-error" hidden></div>
+      </div>
+    </section>
+
+    <div class="wrap sections" id="sections">
+      <section class="card" id="months" aria-labelledby="months-title">
+        <header class="card__head">
+          <div>
+            <h2 id="months-title">Month by month</h2>
+            <p class="card__sub">Payouts above the line, costs below it. The dot is what was left after loan interest.</p>
+          </div>
+          <div class="view-toggle" data-view-for="months"></div>
+        </header>
+        <div class="legend" id="legend-months"></div>
+        <div class="view" data-view="chart"><div class="chart" id="chart-months"></div></div>
+        <div class="view" data-view="table" hidden><div class="table-wrap" id="table-months"></div></div>
+      </section>
+
+      <section class="card" id="nights" aria-labelledby="nights-title">
+        <header class="card__head">
+          <div>
+            <h2 id="nights-title">Night by night</h2>
+            <p class="card__sub">Every night in the period, one row per month. Each bar is a stay, shaded by its nightly rate. Empty cells were for sale and didn’t sell.</p>
+          </div>
+          <div class="view-toggle" data-view-for="nights"></div>
+        </header>
+        <div class="kpis" id="kpis"></div>
+        <div class="legend" id="legend-nights"></div>
+        <div class="view" data-view="chart"><div class="chart chart--tape" id="chart-tape"></div></div>
+        <div class="view" data-view="table" hidden><div class="table-wrap" id="table-stays"></div></div>
+      </section>
+
+      <div class="split">
+        <section class="card" id="costs" aria-labelledby="costs-title">
+          <header class="card__head">
+            <div>
+              <h2 id="costs-title">Where the money goes</h2>
+              <p class="card__sub" id="costs-sub">Every cost charged to this listing, largest first. Shared bills are split by the property’s sharing rules; the pale track is the full bill.</p>
+            </div>
+            <div class="view-toggle" data-view-for="costs"></div>
+          </header>
+          <div class="legend" id="legend-costs"></div>
+          <div class="view" data-view="chart"><ol class="cost-list" id="chart-costs"></ol></div>
+          <div class="view" data-view="table" hidden><div class="table-wrap" id="table-costs"></div></div>
+        </section>
+
+        <section class="card" id="health" aria-labelledby="health-title">
+          <header class="card__head">
+            <div>
+              <h2 id="health-title">How far to trust these figures</h2>
+              <p class="card__sub">What’s loaded, what’s still missing, and the checks the build runs on every load.</p>
+            </div>
+          </header>
+          <ul class="health" id="health-list"></ul>
+          <h3 class="subhead">Data checks</h3>
+          <ul class="checks" id="checks-list"></ul>
+        </section>
+      </div>
+
+      <section class="card" id="guests" aria-labelledby="guests-title">
+        <header class="card__head">
+          <div>
+            <h2 id="guests-title">How guests book</h2>
+            <p class="card__sub" id="guests-sub">Stays that began in the period.</p>
+          </div>
+          <div class="view-toggle" data-view-for="guests"></div>
+        </header>
+        <div class="view trio" data-view="chart">
+          <figure class="mini">
+            <figcaption><span class="mini__title">Length of stay</span><span class="mini__sub" id="stay-sub"></span></figcaption>
+            <div class="chart" id="chart-stay"></div>
+          </figure>
+          <figure class="mini">
+            <figcaption><span class="mini__title">Booked ahead</span><span class="mini__sub" id="lead-sub"></span></figcaption>
+            <div class="chart" id="chart-lead"></div>
+          </figure>
+          <figure class="mini">
+            <figcaption><span class="mini__title">Nightly rate by season</span><span class="mini__sub" id="season-sub"></span></figcaption>
+            <div class="legend legend--mini" id="legend-season"></div>
+            <div class="chart" id="chart-season"></div>
+          </figure>
+        </div>
+        <div class="view" data-view="table" hidden><div class="table-wrap" id="table-guests"></div></div>
+      </section>
+
+      <section class="card" id="statement" aria-labelledby="statement-title">
+        <header class="card__head">
+          <div>
+            <h2 id="statement-title">Monthly statement</h2>
+            <p class="card__sub">The figures behind every chart above, one row per month.</p>
+          </div>
+          <button class="btn" id="download-csv" type="button">
+            <svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v8M4.5 7 8 10.5 11.5 7M3 13.5h10"/></svg>
+            Download CSV
+          </button>
+        </header>
+        <div class="table-wrap" id="table-statement"></div>
+      </section>
+    </div>
+
+    <footer class="wrap footer">
+      <p id="footer-text">Figures come from the RedTree database views, read fresh on every load.</p>
+    </footer>
+  </main>
+
+  <div class="tooltip" id="tooltip" role="tooltip" hidden></div>
+</body>
+</html>

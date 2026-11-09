@@ -109,6 +109,40 @@ every data-quality check, constraint test and scenario test. Then:
 SELECT * FROM vw_monthly_report ORDER BY month_start;
 ```
 
+## The dashboard
+
+![The dashboard on the demo data](docs/images/dashboard.png)
+
+A local web dashboard over the same database:
+
+```bash
+python dashboard/server.py            # opens http://127.0.0.1:8050
+python dashboard/server.py azure      # the Azure database instead
+```
+
+It needs nothing beyond `requirements.txt` (the server is Python's own
+`http.server`, the charts are hand-drawn SVG). What it shows, for any listing
+and any period (last 12 complete months, Australian financial years,
+calendar years or any range):
+
+- **The profit bridge:** from what guests paid, through the platform fee,
+  expenses, cleaning and loan interest, to profit after interest.
+- **Month by month:** payouts above the line, costs below, profit as a line.
+- **Night by night:** every night of the period, one row per month, each stay
+  a bar shaded by its nightly rate, with occupancy and payout per night.
+- **Where the money goes:** every cost, the listing's share against the full
+  bill for shared ones.
+- **How guests book:** length of stay, how far ahead, rates by season.
+- **How far to trust the figures:** which months are complete, unverified
+  costs, receipts waiting for review, and the build's own data checks.
+- **The monthly statement,** downloadable as CSV.
+
+Every figure comes from the report views (`vw_monthly_report` and the
+expense views), so the dashboard always agrees with the SQL. It is read-only,
+listens on 127.0.0.1 only (the data has guest names, and there is no login),
+works in light and dark mode, on a phone, and by keyboard, and every chart
+has a table view.
+
 ## Using it for your own property
 
 ## The receipts mailbox (Gmail)
@@ -185,6 +219,7 @@ For a new Azure deployment:
 |---|---|
 | `sql/` | schema (`01`), reference data (`03`), views (`20`), checks (`30`, `31`, `63`), tests (`33`, `34`), transform and sync (`50` to `54`), star schema (`60` to `62`) |
 | `python/` | the pipeline steps, `pipeline.py` (the daily run), `build_db.py`, `setup_property.py`, `review_receipts.py`, `make_demo_data.py` |
+| `dashboard/` | the local dashboard: `server.py`, the read-only queries (`dashboard_data.py`) and the page (`static/`) |
 | `tests/` | unit tests for the decision-making functions |
 | `config/` | the example property configuration |
 | `deploy/` | Azure setup and publishing |
